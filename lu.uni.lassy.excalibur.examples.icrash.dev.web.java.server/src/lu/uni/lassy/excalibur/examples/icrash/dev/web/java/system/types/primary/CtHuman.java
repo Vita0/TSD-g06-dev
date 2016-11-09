@@ -79,7 +79,32 @@ public class CtHuman implements Serializable {
 		
 		return new PtBoolean(false);
 	}
-	
+
+	/**
+	 * used to specify the property of having sent an report message to the family member.
+	 *
+	 * @return the success of the method
+	 * @throws RemoteException Thrown if the server is offline
+	 */
+	public PtBoolean isFamilyAcknowledged(String report) {
+
+		try {
+			IcrashSystem sys = IcrashSystem.getInstance();
+			
+			ActComCompany theComCompany = sys.getActComCompany(this);
+			
+			if(theComCompany != null){
+				DtSMS sms = new DtSMS(new PtString("The crisis report changed! New Report: " + report));
+				return theComCompany.ieSmsSend(this.id, sms);
+			} else
+				throw new Exception("No com company assigned to the human " + this.id.value.getValue());
+		} catch(Exception ex){
+			log.error("Exception in CtHuman.isFamilyAcknowledged ..." + ex);
+		}
+		
+		return new PtBoolean(false);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		

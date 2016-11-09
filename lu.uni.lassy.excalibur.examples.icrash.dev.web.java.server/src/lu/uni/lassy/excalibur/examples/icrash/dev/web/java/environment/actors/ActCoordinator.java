@@ -11,6 +11,7 @@
 package lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.actors;
 
 import org.apache.log4j.Logger;
+import java.util.ArrayList;
 
 import com.vaadin.data.util.BeanItemContainer;
 
@@ -24,6 +25,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtComment;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtCrisisID;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLogin;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtAlertStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisType;
@@ -138,7 +140,7 @@ public class ActCoordinator extends ActAuthenticated {
 		return res;
 	}
 
-	public PtBoolean oeReportOnCrisis(DtCrisisID aDtCrisisID,DtComment aDtComment) {
+	public PtBoolean oeReportOnCrisis(DtCrisisID aDtCrisisID,DtComment aDtComment, PtBoolean aDtCrisisSendSmsFamily) {
 	
 		IcrashSystem sys = IcrashSystem.getInstance();
 
@@ -146,13 +148,33 @@ public class ActCoordinator extends ActAuthenticated {
 		sys.setCurrentRequestingAuthenticatedActor(this);
 
 		log.info("message ActCoordinator.oeReportOnCrisis sent to system");
-		PtBoolean res = sys.oeReportOnCrisis(aDtCrisisID, aDtComment);
+		PtBoolean res = sys.oeReportOnCrisis(aDtCrisisID, aDtComment, aDtCrisisSendSmsFamily);
 			
-		if(res.getValue() == true)
+		if(res.getValue() == true && aDtCrisisSendSmsFamily.getValue() == false) {
 			log.info("operation oeReportOnCrisis successfully executed by the system");
+		}
+		else if (res.getValue() == true) {
+			log.info("operation oeReportOnCrisis successfully executed by the system. Report was sent to family members.");
+		}
 
 		return res;
 
+	}
+
+	public PtBoolean oeAddFamilyNumbersOnCrisis(DtCrisisID aDtCrisisID, ArrayList<DtPhoneNumber> aDtFamilyNumbers) {
+		
+		IcrashSystem sys = IcrashSystem.getInstance();
+
+		//set up ActAuthenticated instance that performs the request
+		sys.setCurrentRequestingAuthenticatedActor(this);
+
+		log.info("message ActCoordinator.oeAddFamilyNumberOnCrisis sent to system");
+		PtBoolean res = sys.oeAddFamilyNumbersOnCrisis(aDtCrisisID, aDtFamilyNumbers);
+			
+		if(res.getValue() == true)
+			log.info("operation oeAddFamilyNumberOnCrisis successfully executed by the system");
+
+		return res;
 	}
 
 	public PtBoolean oeCloseCrisis(DtCrisisID aDtCrisisID) {

@@ -16,6 +16,8 @@ package lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import org.apache.log4j.Logger;
 
@@ -53,6 +55,9 @@ public class CtCrisis implements Serializable {
 	/** The date and time of the accident that is associated to the crisis. */
 	public DtDateAndTime instant;
 	
+	/** The family numbers associated with the crisis. */
+	public ArrayList<DtPhoneNumber> familyNumbers;
+	
 	/** The comment associated with the crisis. Often refered to as the report. */
 	public DtComment comment;
 
@@ -69,15 +74,16 @@ public class CtCrisis implements Serializable {
 	 */
 	public PtBoolean init(DtCrisisID aId, EtCrisisType aType,
 			EtCrisisStatus aStatus, DtGPSLocation aLocation,
-			DtDateAndTime aInstant, DtComment aComment) {
+			DtDateAndTime aInstant, ArrayList<DtPhoneNumber> aFamilyNumbers, DtComment aComment) {
 
 		id = aId;
 		type = aType;
 		status = aStatus;
 		location = aLocation;
 		instant = aInstant;
+		familyNumbers = aFamilyNumbers;
 		comment = aComment;
-
+		
 		return new PtBoolean(true);
 
 	}
@@ -219,7 +225,10 @@ public class CtCrisis implements Serializable {
 		
 		if (!aCtCrisis.type.equals(this.type))
 			return false;
-		
+
+		if (!aCtCrisis.familyNumbers.equals(this.familyNumbers))
+			return false;
+
 		return true;
 	}
 	

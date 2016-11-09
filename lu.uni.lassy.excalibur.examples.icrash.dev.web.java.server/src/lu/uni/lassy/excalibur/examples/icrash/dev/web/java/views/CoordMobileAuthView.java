@@ -11,15 +11,19 @@
 package lu.uni.lassy.excalibur.examples.icrash.dev.web.java.views;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
+//import com.google.gwt.dev.util.collect.HashMap;
 import com.vaadin.addon.touchkit.ui.NavigationBar;
 import com.vaadin.addon.touchkit.ui.TabBarView;
 import com.vaadin.addon.touchkit.ui.VerticalComponentGroup;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
@@ -33,6 +37,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.CheckBox;
 
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.IcrashEnvironment;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.actors.ActCoordinator;
@@ -44,6 +49,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtComment;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtCoordinatorID;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtCrisisID;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtAlertStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.types.stdlib.PtBoolean;
@@ -180,7 +186,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		
 		crisesTable = new Grid();
 		crisesTable.setContainerDataSource(actCoordinator.getCrisesContainer());
-		crisesTable.setColumnOrder("ID", "date", "time", "type", "longitude", "latitude", "comment", "status");
+		crisesTable.setColumnOrder("ID", "date", "time", "type", "longitude", "latitude", "familyNumbers", "comment", "status");
 		crisesTable.setSelectionMode(SelectionMode.SINGLE);
 
 		crisesTable.setWidth("100%");
@@ -201,6 +207,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		
 		Button handleCrisesBtn = new Button("Handle");
 		Button reportOnCrisisBtn = new Button("Report");
+		Button familyNumbersOnCrisisBtn = new Button("Family phone numbers");
 		Button changeCrisisStatusBtn = new Button("Status");
 		Button closeCrisisBtn = new Button("Close");
 		Button getCrisesSetBtn = new Button("Get crises set");
@@ -208,6 +215,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		
 		handleCrisesBtn.setImmediate(true);
 		reportOnCrisisBtn.setImmediate(true);
+		familyNumbersOnCrisisBtn.setImmediate(true);
 		changeCrisisStatusBtn.setImmediate(true);
 		closeCrisisBtn.setImmediate(true);
 		getCrisesSetBtn.setImmediate(true);
@@ -217,7 +225,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		crisesStatus.setNullSelectionAllowed(false);
 		crisesStatus.select("Pending");
 		
-		crisesButtons1.addComponents(handleCrisesBtn, reportOnCrisisBtn, changeCrisisStatusBtn);
+		crisesButtons1.addComponents(handleCrisesBtn, reportOnCrisisBtn, changeCrisisStatusBtn, familyNumbersOnCrisisBtn);
 		crisesButtons2.addComponents(closeCrisisBtn, getCrisesSetBtn, crisesStatus);
 		
 		////////////////////////////////////////
@@ -239,7 +247,10 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		Button cancelBtn = new Button("Cancel");
 		buttonsLayout.addComponents(reportCrisisBtn, cancelBtn);
 		buttonsLayout.setSpacing(true);
-		reportLayout.addComponents(crisisID, reportText, buttonsLayout);
+		CheckBox sendSmsFamily = new CheckBox("Send SMS to family members");
+		HorizontalLayout layoutSendSMS = new HorizontalLayout();
+		layoutSendSMS.addComponent(sendSmsFamily);
+		reportLayout.addComponents(crisisID, reportText, layoutSendSMS, buttonsLayout);
 
 		cancelBtn.addClickListener(event -> {
 			reportCrisisSubWindow.close();
@@ -255,7 +266,8 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 									thisCrisisID.toString())),
 					new DtComment(
 							new PtString(
-									reportText.getValue())));
+									reportText.getValue())),
+					new PtBoolean(sendSmsFamily.getValue()));
 				
 			reportCrisisSubWindow.close();
 			reportText.clear();
@@ -315,7 +327,65 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		});
 		
 		////////////////////////////////////////
+
+		HashMap<Button, TextField> phoneList = new HashMap<Button, TextField>();
+
+		Window familyNumbersCrisisSubWindow = new Window();
+		familyNumbersCrisisSubWindow.setClosable(false);
+		familyNumbersCrisisSubWindow.setResizable(false);
+		familyNumbersCrisisSubWindow.setResponsive(true);
+		familyNumbersCrisisSubWindow.setHeight("250px");
+		VerticalLayout familyNumbersLayout = new VerticalLayout();
+		familyNumbersLayout.setMargin(true);
+		familyNumbersLayout.setSpacing(true);
+		familyNumbersCrisisSubWindow.setContent(familyNumbersLayout);
+		TextField crisisID2 = new TextField();
+		HorizontalLayout buttonsLayout2 = new HorizontalLayout();
+		Button familyNumbersCrisisBtn = new Button("Save numbers");
+		familyNumbersCrisisBtn.setClickShortcut(KeyCode.ENTER);
+		familyNumbersCrisisBtn.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		Button cancelBtn2 = new Button("Cancel");
+		Button addPhone = new Button();
+		addPhone.setIcon(FontAwesome.PLUS);
+		addPhone.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		buttonsLayout2.addComponents(addPhone, familyNumbersCrisisBtn, cancelBtn2);
+		buttonsLayout2.setSpacing(true);
 		
+		cancelBtn2.addClickListener(event -> {
+			familyNumbersCrisisSubWindow.close();
+		});
+
+		addPhone.addClickListener(event -> {
+			fillFamilyNumbersLayout("", familyNumbersLayout, phoneList, familyNumbersCrisisSubWindow, true);
+		});
+
+		familyNumbersCrisisBtn.addClickListener(event -> {
+			CrisisBean selectedCrisisBean = (CrisisBean) crisesTable.getSelectedRow();
+			Integer thisCrisisID = new Integer(selectedCrisisBean.getID());
+			ArrayList<DtPhoneNumber> familyPhoneNumbers = new ArrayList<DtPhoneNumber>();
+			for (TextField field: phoneList.values())
+			{
+				if (field.getValue().length() > 0)
+				{
+					DtPhoneNumber familyNumber = new DtPhoneNumber(
+													new PtString(
+															field.getValue()));
+					if (familyNumber.is().getValue() == true) {
+						familyPhoneNumbers.add(familyNumber);
+					}
+				}
+			}
+			actCoordinator.oeAddFamilyNumbersOnCrisis(
+					new DtCrisisID(
+							new PtString(
+									thisCrisisID.toString())),
+					familyPhoneNumbers);
+				
+			familyNumbersCrisisSubWindow.close();
+		});
+
+		////////////////////////////////////////
+
 		handleCrisesBtn.addClickListener(event -> {
 			CrisisBean selectedCrisisBean = (CrisisBean) crisesTable.getSelectedRow();
 			Integer thisCrisisID = new Integer(selectedCrisisBean.getID());
@@ -328,10 +398,17 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 			reportCrisisSubWindow.center();
 			crisisID.setValue(thisCrisisID.toString());
 			crisisID.setEnabled(false);
+			sendSmsFamily.setValue(false);
+			if (selectedCrisisBean.getFamilyNumbers().size() > 0) {
+				layoutSendSMS.setVisible(true);
+			}
+			else {
+				layoutSendSMS.setVisible(false);
+			}
 			reportText.focus();
 			UI.getCurrent().addWindow(reportCrisisSubWindow);
 		});
-		
+
 		changeCrisisStatusBtn.addClickListener(event -> {
 			CrisisBean selectedCrisisBean = (CrisisBean) crisesTable.getSelectedRow();
 			Integer thisCrisisID = new Integer(selectedCrisisBean.getID());
@@ -340,6 +417,24 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 			crisisID1.setEnabled(false);
 			crisisStatus.focus();
 			UI.getCurrent().addWindow(changeCrisisStatusSubWindow);
+		});
+
+		familyNumbersOnCrisisBtn.addClickListener(event -> {
+			CrisisBean selectedCrisisBean = (CrisisBean) crisesTable.getSelectedRow();
+			Integer thisCrisisID = new Integer(selectedCrisisBean.getID());
+			familyNumbersCrisisSubWindow.center();
+			crisisID2.setValue(thisCrisisID.toString());
+			crisisID2.setEnabled(false);
+			familyNumbersLayout.removeAllComponents();
+			familyNumbersLayout.addComponents(crisisID2);
+			phoneList.clear();
+			for (String phone: selectedCrisisBean.getFamilyNumbers())
+			{
+				fillFamilyNumbersLayout(phone, familyNumbersLayout, phoneList, familyNumbersCrisisSubWindow, false);
+			}
+			fillFamilyNumbersLayout("", familyNumbersLayout, phoneList, familyNumbersCrisisSubWindow, false);
+			familyNumbersLayout.addComponents(buttonsLayout2);
+			UI.getCurrent().addWindow(familyNumbersCrisisSubWindow);
 		});
 
 		closeCrisisBtn.addClickListener(event -> {
@@ -377,5 +472,27 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 	
 	@Override
 	public void enter(ViewChangeEvent event) {
+	}
+
+	private void fillFamilyNumbersLayout(String phone, VerticalLayout familyNumbersLayout, HashMap<Button, TextField> phoneList, Window familyNumbersCrisisSubWindow, boolean insertBeforeButtons) {
+		
+		TextField familyNumber = new TextField();
+		Button deletePhone = new Button();
+		deletePhone.setIcon(FontAwesome.TRASH_O);
+		HorizontalLayout numberLayout = new HorizontalLayout();
+		numberLayout.setSpacing(true);
+		numberLayout.addComponents(familyNumber, deletePhone);
+		if (insertBeforeButtons) {
+			familyNumbersLayout.addComponent(numberLayout, familyNumbersLayout.getComponentCount() - 1);
+		}
+		else {
+			familyNumbersLayout.addComponent(numberLayout);
+		}
+		familyNumber.setValue(phone);
+		phoneList.put(deletePhone, familyNumber);
+		deletePhone.addClickListener(event1 -> {
+			phoneList.remove(deletePhone);
+			familyNumbersLayout.removeComponent(numberLayout);
+		});
 	}
 }

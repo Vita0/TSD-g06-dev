@@ -64,6 +64,7 @@ CREATE TABLE `crises` (
   `latitude` double DEFAULT NULL,
   `longitude` double DEFAULT NULL,
   `instant` datetime DEFAULT NULL,
+  `family_numbers` VARCHAR(500) DEFAULT NULL,
   `comment` varchar(80) DEFAULT NULL,
   `coordinator` varchar(80) DEFAULT NULL,
   PRIMARY KEY (`id`)

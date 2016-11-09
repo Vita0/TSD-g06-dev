@@ -23,6 +23,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
+import java.util.ArrayList;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+import elemental.json.impl.JreJsonFactory;
 
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.CtCoordinator;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.CtCrisis;
@@ -34,6 +42,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLogin;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLongitude;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPassword;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisType;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.types.stdlib.DtDate;
@@ -193,9 +202,16 @@ public class DbCrises extends DbAbstract {
 					//crisis's comment  
 					DtComment aDtComment = new DtComment(new PtString(
 							res.getString("comment")));
+					//crisis's family phone numbers
+					ArrayList<DtPhoneNumber> aDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
+					JsonArray phoneNumbers = JsonUtil.parse(res.getString("family_numbers"));
+					for (int i = 0; i < phoneNumbers.length(); i++){ 
+						aDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
+								phoneNumbers.get(i).toString())));
+					} 
 
 					aCtCrisis.init(aId, aType, aStatus, aDtGPSLocation,
-							aInstant, aDtComment);
+							aInstant, aDtFamilyNumbers, aDtComment);
 
 				}
 
@@ -346,9 +362,16 @@ public class DbCrises extends DbAbstract {
 					//crisis's comment  
 					DtComment aDtComment = new DtComment(new PtString(
 							res.getString("comment")));
-
+					//crisis's family phone numbers
+					ArrayList<DtPhoneNumber> aDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
+					JsonArray phoneNumbers = JsonUtil.parse(res.getString("family_numbers"));
+					for (int i = 0; i < phoneNumbers.length(); i++){ 
+						aDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
+								phoneNumbers.get(i).toString())));
+					} 
+System.out.println("getString(family_numbers): " + res.getString("family_numbers"));
 					aCtCrisis.init(aId, aType, aStatus, aDtGPSLocation,
-							aInstant, aDtComment);
+							aInstant, aDtFamilyNumbers, aDtComment);
 
 					//*************************************
 					aCtCoordinator = new CtCoordinator();
@@ -466,9 +489,16 @@ public class DbCrises extends DbAbstract {
 					//crisis's comment  
 					DtComment aDtComment = new DtComment(new PtString(
 							res.getString("comment")));
+					//crisis's family phone numbers
+					ArrayList<DtPhoneNumber> aDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
+					JsonArray phoneNumbers = JsonUtil.parse(res.getString("family_numbers"));
+					for (int i = 0; i < phoneNumbers.length(); i++){ 
+						aDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
+								phoneNumbers.get(i).toString())));
+					} 
 
 					aCtCrisis.init(aId, aType, aStatus, aDtGPSLocation,
-							aInstant, aDtComment);
+							aInstant, aDtFamilyNumbers, aDtComment);
 
 					//add instance to the hash
 					cmpSystemCtCrisis.put(aCtCrisis.id.value.getValue(),
@@ -588,7 +618,7 @@ public class DbCrises extends DbAbstract {
 				String sql = "UPDATE "
 						+ dbName
 						+ ".crises SET `type` = ?, `status` = ?, `latitude` = ?, `longitude` = ?,"
-						+ " `instant` = ?, `comment` = ? WHERE id = ?";
+						+ " `instant` = ?, `comment` = ?, `family_numbers` = ? WHERE id = ?";
 				
 				String id = aCtCrisis.id.value.getValue();
 				String type = aCtCrisis.type.toString();
@@ -614,6 +644,15 @@ public class DbCrises extends DbAbstract {
 
 				String comment = aCtCrisis.comment.value.getValue();
 
+				JreJsonFactory factory = new JreJsonFactory();
+				JsonArray familyNumbers = factory.createArray();
+				int index = 0;
+				for (DtPhoneNumber phone: aCtCrisis.familyNumbers) {
+					familyNumbers.set(index, phone.value.getValue());
+					index++;
+				}
+				String jsonFamilyNumbers = familyNumbers.toJson();
+
 				PreparedStatement statement = conn.prepareStatement(sql);
 				statement.setString(1, type);
 				statement.setString(2, status);
@@ -621,8 +660,9 @@ public class DbCrises extends DbAbstract {
 				statement.setDouble(4, longitude);
 				statement.setString(5, instant);
 				statement.setString(6, comment);
-				statement.setString(7, id);
-				
+				statement.setString(7, jsonFamilyNumbers);
+				statement.setString(8, id);
+
 				int rows = statement.executeUpdate();
 				log.debug(rows + " row affected");
 			} catch (SQLException s) {

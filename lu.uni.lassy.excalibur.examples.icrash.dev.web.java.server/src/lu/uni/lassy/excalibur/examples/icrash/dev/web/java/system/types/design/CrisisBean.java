@@ -10,15 +10,20 @@
  ******************************************************************************/
 package lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.design;
 
+import java.util.ArrayList;
+
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
+
 public class CrisisBean {
 	public CrisisBean(Integer iD, String date, String time, String type, double longitude, double latitude,
-			String comment, String status) {
+			ArrayList<String> familyNumbers, String comment, String status) {
 		ID = iD;
 		this.date = date;
 		this.time = time;
 		this.type = type;
 		this.longitude = longitude;
 		this.latitude = latitude;
+		this.familyNumbers = familyNumbers;
 		this.comment = comment;
 		this.status = status;
 	}
@@ -28,6 +33,7 @@ public class CrisisBean {
 	private String type;
 	private double longitude;
 	private double latitude;
+	private ArrayList<String> familyNumbers;
 	private String comment;
 	private String status;
 	
@@ -66,6 +72,12 @@ public class CrisisBean {
 	}
 	public void setLatitude(double latitude) {
 		this.latitude = latitude;
+	}
+	public ArrayList<String> getFamilyNumbers() {
+		return familyNumbers;
+	}
+	public void setFamilyNumbers(ArrayList<String> familyNumbers) {
+		this.familyNumbers = familyNumbers;
 	}
 	public String getComment() {
 		return comment;

@@ -20,10 +20,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 
+import elemental.json.JsonArray;
+import elemental.json.impl.JsonUtil;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.CtAlert;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.CtCrisis;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.CtHuman;
@@ -477,10 +480,17 @@ public class DbAlerts extends DbAbstract {
 					//crisis's comment  
 					DtComment aCrisisDtComment = new DtComment(new PtString(
 							res.getString("crises.comment")));
+					//crisis's family phone numbers
+					ArrayList<DtPhoneNumber> aCrisisDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
+					JsonArray phoneNumbers = JsonUtil.parse(res.getString("crises.family_numbers"));
+					for (int i = 0; i < phoneNumbers.length(); i++){ 
+						aCrisisDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
+								phoneNumbers.get(i).toString())));
+					} 
 
 					aCtCrisis.init(aCrisisId, aCrisisType, aCrisisStatus,
 							aCrisisDtGPSLocation, aCrisisInstant,
-							aCrisisDtComment);
+							aCrisisDtFamilyNumbers, aCrisisDtComment);
 
 					//add instances to the hash
 					assCtAlertCtCrisis.put(aCtAlert, aCtCrisis);

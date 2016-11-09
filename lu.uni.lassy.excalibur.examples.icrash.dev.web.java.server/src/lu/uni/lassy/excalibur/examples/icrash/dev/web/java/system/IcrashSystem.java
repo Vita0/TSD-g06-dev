@@ -646,7 +646,7 @@ public class IcrashSystem implements Serializable {
 				DtComment acComment = new DtComment(new PtString(
 						"no report defined, yet"));
 				aCtCrisis.init(acId, acType, acStatus, aDtGPSLocation, aInstant,
-						acComment);
+						new ArrayList<DtPhoneNumber>(), acComment);
 	
 				//DB: insert crisis in the database
 				DbCrises.insertCrisis(aCtCrisis);
@@ -955,7 +955,7 @@ public class IcrashSystem implements Serializable {
 		return new PtBoolean(false);
 	}
 
-	public PtBoolean oeReportOnCrisis(DtCrisisID aDtCrisisID, DtComment aDtComment) {
+	public PtBoolean oeReportOnCrisis(DtCrisisID aDtCrisisID, DtComment aDtComment, PtBoolean aDtCrisisSendSmsFamily) {
 		try {
 			// PreP 1
 			if (!isSystemStartedCheck()) {
@@ -977,11 +977,86 @@ public class IcrashSystem implements Serializable {
 				PtString aMessage = new PtString("The crisis comment has been updated !");
 				theActCoordinator.ieMessage(aMessage);
 
+				if (aDtCrisisSendSmsFamily.getValue() == true)
+				{
+					for (DtPhoneNumber familyNumber: theCrisis.familyNumbers)
+					{
+						//PostF2
+						CtHuman aCtFamilyHuman = new CtHuman();
+						boolean existsHuman = false;
+				
+						//check if there already exists a human with such phine number
+						for (CtHuman existingHuman : assCtHumanActComCompany.keySet()) {
+							String exPhoneNumber = existingHuman.id.value.getValue();
+				
+							if (exPhoneNumber.equals(familyNumber.value.getValue())) {
+								aCtFamilyHuman = existingHuman;
+								existsHuman = true;
+								break;
+							}
+						}
+			
+						//if there no exists human, then we need (1) to initialise the just created instance
+						// and (2) to add it to the assCtHumanActComCompany relationship 
+				
+						if (!existsHuman) {
+							//TODO: add new kind
+							EtHumanKind aEtHumanKind = EtHumanKind.anonym;
+							aCtFamilyHuman.init(familyNumber, aEtHumanKind);
+							assCtHumanActComCompany.put(aCtFamilyHuman, currentConnectedComCompany);
+				
+							//update Messir composition
+							cmpSystemCtHuman.put(aCtFamilyHuman.id.value.getValue(), aCtFamilyHuman);
+				
+							//DB: get currentConnectedComCompany's id
+							String idComCompany = DbComCompanies
+									.getComCompanyID(currentConnectedComCompany.getName());
+				
+							//DB: insert human in the database
+							DbHumans.insertHuman(aCtFamilyHuman, idComCompany);
+				
+						}
+						if (!aCtFamilyHuman.isFamilyAcknowledged(theCrisis.comment.value.getValue()).getValue())
+							log.error("Unable to message a communication company (family member) about the crisis report update");
+					}
+				}
+
 				return new PtBoolean(true);
 			}
 		}
 		catch (Exception e){
 			log.error("Exception in oeReportOnCrisis..." + e);
+		}
+		return new PtBoolean(true);
+	}
+
+	public PtBoolean oeAddFamilyNumbersOnCrisis(DtCrisisID aDtCrisisID, ArrayList<DtPhoneNumber> aDtFamilyNumbers) {
+		try {
+			// PreP 1
+			if (!isSystemStartedCheck()) {
+				log.debug("Inside oeAddFamilyNumberOnCrisis: the system is not started! Aborting...");
+				return new PtBoolean(false);
+			}
+																	
+			// PreP 2
+			if (!isActorLoggedInCheck())
+				return new PtBoolean(false);
+			
+			CtCrisis theCrisis = cmpSystemCtCrisis.get(aDtCrisisID.value.getValue());
+			if (currentRequestingAuthenticatedActor instanceof ActCoordinator) {
+				ActCoordinator theActCoordinator = (ActCoordinator) currentRequestingAuthenticatedActor;
+
+				// PostF 1
+				theCrisis.familyNumbers = aDtFamilyNumbers;
+				DbCrises.updateCrisis(theCrisis);
+				PtString aMessage = new PtString("The crisis family phone numbers have been updated!");
+				theActCoordinator.ieMessage(aMessage);
+
+				return new PtBoolean(true);
+			}
+		}
+		catch (Exception e){
+			log.error("Exception in oeAddFamilyNumberOnCrisis..." + e);
 		}
 		return new PtBoolean(true);
 	}
@@ -1011,7 +1086,11 @@ public class IcrashSystem implements Serializable {
 					if (crisis.status.toString().equals(aEtCrisisStatus.toString())) {
 						
 						//PostF1
-						
+						ArrayList<String> familyNumbers = new ArrayList<String>();
+						for (DtPhoneNumber phone: crisis.familyNumbers) { 
+							familyNumbers.add(phone.toString());
+						} 
+
 						aActCoordinator.getCrisesContainer().addBean(new CrisisBean(
 								Integer.parseInt(crisis.id.toString()),
 								crisis.instant.date.toString(),
@@ -1019,6 +1098,7 @@ public class IcrashSystem implements Serializable {
 								crisis.type.toString(),
 								crisis.location.longitude.value.getValue(),
 								crisis.location.latitude.value.getValue(),
+								familyNumbers,
 								crisis.comment.toString(),
 								crisis.status.toString()));
 						
@@ -1030,6 +1110,7 @@ public class IcrashSystem implements Serializable {
 		}
 		catch (Exception e){
 			log.error("Exception in oeGetCrisisSet..." + e);
+			e.printStackTrace();
 		}
 		return new PtBoolean(false);
 	}
