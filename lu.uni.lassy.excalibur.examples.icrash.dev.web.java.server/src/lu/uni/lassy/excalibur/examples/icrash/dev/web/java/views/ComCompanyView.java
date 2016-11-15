@@ -67,8 +67,9 @@ public class ComCompanyView extends ComCompanyDesign implements View, Serializab
 	 // comCompanyMessages.setColumnHeaderMode(ColumnHeaderMode.HIDDEN);
 	
 		comCompanyMessages.setColumnExpandRatio("inputEvent", 20);
+		comCompanyMessages.setColumnExpandRatio("phoneNumber", 20);
 		comCompanyMessages.setColumnExpandRatio("message", 80);
-		comCompanyMessages.setVisibleColumns("inputEvent", "message");
+		comCompanyMessages.setVisibleColumns("inputEvent", "phoneNumber", "message");
 		comCompanyMessages.setSizeFull();
 		
 		messagesPanel.setContent(comCompanyMessages);
@@ -153,7 +154,7 @@ public class ComCompanyView extends ComCompanyDesign implements View, Serializab
 				_typeOfPerson = EtHumanKind.victim;
 			if (typeOfPerson.getValue().toString().equals("anonym"))
 				_typeOfPerson = EtHumanKind.anonym;
-				
+			
 			DtDate aDtDate = new DtDate(
 					new DtYear(new PtInteger(cal.get(Calendar.YEAR))),
 					new DtMonth(new PtInteger(cal.get(Calendar.MONTH)+1)),

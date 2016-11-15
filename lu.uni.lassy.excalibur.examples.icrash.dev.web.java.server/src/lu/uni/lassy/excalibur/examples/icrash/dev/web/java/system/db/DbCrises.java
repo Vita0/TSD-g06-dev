@@ -43,6 +43,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLongitude;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPassword;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtFamilyPhoneNumbers;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisType;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.types.stdlib.DtDate;
@@ -203,15 +204,11 @@ public class DbCrises extends DbAbstract {
 					DtComment aDtComment = new DtComment(new PtString(
 							res.getString("comment")));
 					//crisis's family phone numbers
-					ArrayList<DtPhoneNumber> aDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
-					JsonArray phoneNumbers = JsonUtil.parse(res.getString("family_numbers"));
-					for (int i = 0; i < phoneNumbers.length(); i++){ 
-						aDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
-								phoneNumbers.get(i).toString())));
-					} 
+					DtFamilyPhoneNumbers aDtFamilyPhoneNumbers = new DtFamilyPhoneNumbers();
+					aDtFamilyPhoneNumbers.parseJson(res.getString("family_numbers"));
 
 					aCtCrisis.init(aId, aType, aStatus, aDtGPSLocation,
-							aInstant, aDtFamilyNumbers, aDtComment);
+							aInstant, aDtFamilyPhoneNumbers, aDtComment);
 
 				}
 
@@ -363,15 +360,11 @@ public class DbCrises extends DbAbstract {
 					DtComment aDtComment = new DtComment(new PtString(
 							res.getString("comment")));
 					//crisis's family phone numbers
-					ArrayList<DtPhoneNumber> aDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
-					JsonArray phoneNumbers = JsonUtil.parse(res.getString("family_numbers"));
-					for (int i = 0; i < phoneNumbers.length(); i++){ 
-						aDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
-								phoneNumbers.get(i).toString())));
-					} 
-System.out.println("getString(family_numbers): " + res.getString("family_numbers"));
+					DtFamilyPhoneNumbers aDtFamilyPhoneNumbers = new DtFamilyPhoneNumbers();
+					aDtFamilyPhoneNumbers.parseJson(res.getString("family_numbers"));
+
 					aCtCrisis.init(aId, aType, aStatus, aDtGPSLocation,
-							aInstant, aDtFamilyNumbers, aDtComment);
+							aInstant, aDtFamilyPhoneNumbers, aDtComment);
 
 					//*************************************
 					aCtCoordinator = new CtCoordinator();
@@ -490,15 +483,11 @@ System.out.println("getString(family_numbers): " + res.getString("family_numbers
 					DtComment aDtComment = new DtComment(new PtString(
 							res.getString("comment")));
 					//crisis's family phone numbers
-					ArrayList<DtPhoneNumber> aDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
-					JsonArray phoneNumbers = JsonUtil.parse(res.getString("family_numbers"));
-					for (int i = 0; i < phoneNumbers.length(); i++){ 
-						aDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
-								phoneNumbers.get(i).toString())));
-					} 
+					DtFamilyPhoneNumbers aDtFamilyPhoneNumbers = new DtFamilyPhoneNumbers();
+					aDtFamilyPhoneNumbers.parseJson(res.getString("family_numbers"));
 
 					aCtCrisis.init(aId, aType, aStatus, aDtGPSLocation,
-							aInstant, aDtFamilyNumbers, aDtComment);
+							aInstant, aDtFamilyPhoneNumbers, aDtComment);
 
 					//add instance to the hash
 					cmpSystemCtCrisis.put(aCtCrisis.id.value.getValue(),
@@ -644,15 +633,6 @@ System.out.println("getString(family_numbers): " + res.getString("family_numbers
 
 				String comment = aCtCrisis.comment.value.getValue();
 
-				JreJsonFactory factory = new JreJsonFactory();
-				JsonArray familyNumbers = factory.createArray();
-				int index = 0;
-				for (DtPhoneNumber phone: aCtCrisis.familyNumbers) {
-					familyNumbers.set(index, phone.value.getValue());
-					index++;
-				}
-				String jsonFamilyNumbers = familyNumbers.toJson();
-
 				PreparedStatement statement = conn.prepareStatement(sql);
 				statement.setString(1, type);
 				statement.setString(2, status);
@@ -660,7 +640,7 @@ System.out.println("getString(family_numbers): " + res.getString("family_numbers
 				statement.setDouble(4, longitude);
 				statement.setString(5, instant);
 				statement.setString(6, comment);
-				statement.setString(7, jsonFamilyNumbers);
+				statement.setString(7, aCtCrisis.familyNumbers.getJson());
 				statement.setString(8, id);
 
 				int rows = statement.executeUpdate();

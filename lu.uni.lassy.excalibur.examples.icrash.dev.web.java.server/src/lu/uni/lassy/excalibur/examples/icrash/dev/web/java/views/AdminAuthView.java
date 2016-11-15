@@ -108,10 +108,11 @@ public class AdminAuthView extends VerticalLayout implements View, Serializable 
 		Table adminMessagesTable = new Table();
 		
 		adminMessagesTable.setContainerDataSource(actAdmin.getMessagesDataSource());
-		
+	
 		adminMessagesTable.setColumnWidth("inputEvent", 180);
 		adminMessagesTable.setSizeFull();
-		
+		adminMessagesTable.setVisibleColumns("inputEvent", "message");
+	
 		VerticalLayout controlLayout = new VerticalLayout(controlPanel);
 		controlLayout.setSizeFull();
 		controlLayout.setMargin(false);

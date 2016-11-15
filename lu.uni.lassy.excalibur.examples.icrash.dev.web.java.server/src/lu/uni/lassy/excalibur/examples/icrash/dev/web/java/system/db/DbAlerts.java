@@ -37,6 +37,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLatitude;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLongitude;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtFamilyPhoneNumbers;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtAlertStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisType;
@@ -481,16 +482,12 @@ public class DbAlerts extends DbAbstract {
 					DtComment aCrisisDtComment = new DtComment(new PtString(
 							res.getString("crises.comment")));
 					//crisis's family phone numbers
-					ArrayList<DtPhoneNumber> aCrisisDtFamilyNumbers = new ArrayList<DtPhoneNumber>();
-					JsonArray phoneNumbers = JsonUtil.parse(res.getString("crises.family_numbers"));
-					for (int i = 0; i < phoneNumbers.length(); i++){ 
-						aCrisisDtFamilyNumbers.add(new DtPhoneNumber(new PtString(
-								phoneNumbers.get(i).toString())));
-					} 
+					DtFamilyPhoneNumbers aCrisisDtFamilyPhoneNumbers = new DtFamilyPhoneNumbers();
+					aCrisisDtFamilyPhoneNumbers.parseJson(res.getString("crises.family_numbers"));
 
 					aCtCrisis.init(aCrisisId, aCrisisType, aCrisisStatus,
 							aCrisisDtGPSLocation, aCrisisInstant,
-							aCrisisDtFamilyNumbers, aCrisisDtComment);
+							aCrisisDtFamilyPhoneNumbers, aCrisisDtComment);
 
 					//add instances to the hash
 					assCtAlertCtCrisis.put(aCtAlert, aCtCrisis);
@@ -604,6 +601,8 @@ public class DbAlerts extends DbAbstract {
 						aKind = EtHumanKind.victim;
 					if (theKind.equals(EtHumanKind.anonym.name()))
 						aKind = EtHumanKind.anonym;
+					if (theKind.equals(EtHumanKind.familyMember.name()))
+						aKind = EtHumanKind.familyMember;
 
 					aCtHuman.init(aId1, aKind);
 

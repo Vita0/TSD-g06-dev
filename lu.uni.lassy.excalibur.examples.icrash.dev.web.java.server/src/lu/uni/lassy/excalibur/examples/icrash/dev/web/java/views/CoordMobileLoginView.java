@@ -93,6 +93,7 @@ public class CoordMobileLoginView extends NavigationView implements View, Serial
 		Grid messagesTable = new Grid();
 		messagesTable.setContainerDataSource(actCoordinator.getMessagesDataSource());
 		messagesTable.setSizeUndefined();
+		messagesTable.setColumns("inputEvent", "message");
 		
 		VerticalLayout tableLayout = new VerticalLayout();
 		tableLayout.setSizeFull();

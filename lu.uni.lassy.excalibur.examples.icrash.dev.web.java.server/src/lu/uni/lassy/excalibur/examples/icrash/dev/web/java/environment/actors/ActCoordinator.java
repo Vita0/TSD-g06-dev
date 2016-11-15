@@ -26,6 +26,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtCrisisID;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLogin;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtFamilyPhoneNumbers;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtAlertStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisType;
@@ -161,7 +162,7 @@ public class ActCoordinator extends ActAuthenticated {
 
 	}
 
-	public PtBoolean oeAddFamilyNumbersOnCrisis(DtCrisisID aDtCrisisID, ArrayList<DtPhoneNumber> aDtFamilyNumbers) {
+	public PtBoolean oeAddFamilyNumbersOnCrisis(DtCrisisID aDtCrisisID, DtFamilyPhoneNumbers aDtFamilyPhoneNumbers) {
 		
 		IcrashSystem sys = IcrashSystem.getInstance();
 
@@ -169,7 +170,7 @@ public class ActCoordinator extends ActAuthenticated {
 		sys.setCurrentRequestingAuthenticatedActor(this);
 
 		log.info("message ActCoordinator.oeAddFamilyNumberOnCrisis sent to system");
-		PtBoolean res = sys.oeAddFamilyNumbersOnCrisis(aDtCrisisID, aDtFamilyNumbers);
+		PtBoolean res = sys.oeAddFamilyNumbersOnCrisis(aDtCrisisID, aDtFamilyPhoneNumbers);
 			
 		if(res.getValue() == true)
 			log.info("operation oeAddFamilyNumberOnCrisis successfully executed by the system");

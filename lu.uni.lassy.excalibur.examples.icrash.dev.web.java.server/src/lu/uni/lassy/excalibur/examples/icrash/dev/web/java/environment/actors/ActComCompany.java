@@ -85,7 +85,7 @@ public class ActComCompany implements Serializable {
 		log.info("SMS: " + aDtSMS.value.getValue());
 
 		getActorUI().access(() -> 
-			getMessagesDataSource().addBean(new ActorMessageBean("ieSmsSend", aDtSMS.value.getValue()))
+			getMessagesDataSource().addBean(new ActorMessageBean("ieSmsSend", aDtPhoneNumber.value.getValue(), aDtSMS.value.getValue()))
 		);	
 					
 		return new PtBoolean(true);

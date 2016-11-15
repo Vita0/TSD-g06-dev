@@ -23,15 +23,17 @@ public enum EtHumanKind implements JIntIs {
 	/** A victim of the accident. */
 	victim,
 	/** An anonymous reporter of an accident. */
-	anonym;
-	
+	anonym,
+	/** A victim's of the accident family member. */
+	familyMember;
+
 	public PtBoolean is(){
 		return new PtBoolean(this.name() == EtHumanKind.witness.name() ||
-				this.name() == EtHumanKind.victim.name()|| this.name() == EtHumanKind.anonym.name());
+				this.name() == EtHumanKind.victim.name()|| this.name() == EtHumanKind.anonym.name() || this.name() == EtHumanKind.familyMember.name());
 	}
 	
 	public PtString getExpectedDataStructure() {
 		return new PtString("Expected structure of the alert status is to be one of the following:\n" +
-				EtHumanKind.witness.name() + "\n" + EtHumanKind.victim.name() + "\n" + EtHumanKind.anonym.name());
+				EtHumanKind.witness.name() + "\n" + EtHumanKind.victim.name() + "\n" + EtHumanKind.anonym.name() + "\n" + EtHumanKind.familyMember.name());
 	}
 }

@@ -56,7 +56,7 @@ public class CtCrisis implements Serializable {
 	public DtDateAndTime instant;
 	
 	/** The family numbers associated with the crisis. */
-	public ArrayList<DtPhoneNumber> familyNumbers;
+	public DtFamilyPhoneNumbers familyNumbers;
 	
 	/** The comment associated with the crisis. Often refered to as the report. */
 	public DtComment comment;
@@ -74,14 +74,14 @@ public class CtCrisis implements Serializable {
 	 */
 	public PtBoolean init(DtCrisisID aId, EtCrisisType aType,
 			EtCrisisStatus aStatus, DtGPSLocation aLocation,
-			DtDateAndTime aInstant, ArrayList<DtPhoneNumber> aFamilyNumbers, DtComment aComment) {
+			DtDateAndTime aInstant, DtFamilyPhoneNumbers aFamilyPhoneNumbers, DtComment aComment) {
 
 		id = aId;
 		type = aType;
 		status = aStatus;
 		location = aLocation;
 		instant = aInstant;
-		familyNumbers = aFamilyNumbers;
+		familyNumbers = aFamilyPhoneNumbers;
 		comment = aComment;
 		
 		return new PtBoolean(true);

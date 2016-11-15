@@ -114,6 +114,8 @@ public class DbHumans extends DbAbstract {
 						aKind = EtHumanKind.victim;
 					if(theKind.equals(EtHumanKind.anonym.name()))
 						aKind = EtHumanKind.anonym;
+					if(theKind.equals(EtHumanKind.familyMember.name()))
+						aKind = EtHumanKind.familyMember;
 
 					aCtHuman.init(aId,aKind);
 					
@@ -179,6 +181,8 @@ public class DbHumans extends DbAbstract {
 						aKind = EtHumanKind.victim;
 					if(theKind.equals(EtHumanKind.anonym.name()))
 						aKind = EtHumanKind.anonym;
+					if(theKind.equals(EtHumanKind.familyMember.name()))
+						aKind = EtHumanKind.familyMember;
 
 					aCtHuman.init(aId,aKind);
 					
@@ -257,6 +261,9 @@ public class DbHumans extends DbAbstract {
 					
 					if(theKind.equals(EtHumanKind.anonym.name()))
 						aKind = EtHumanKind.anonym;
+					
+					if(theKind.equals(EtHumanKind.familyMember.name()))
+						aKind = EtHumanKind.familyMember;
 
 					aCtHuman.init(aId,aKind);
 					

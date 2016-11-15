@@ -13,6 +13,8 @@ package lu.uni.lassy.excalibur.examples.icrash.dev.web.java.views;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -38,10 +40,13 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.Label;
+import com.vaadin.shared.ui.label.ContentMode;
 
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.IcrashEnvironment;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.actors.ActCoordinator;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.IcrashSystem;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.db.DbComCompanies;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.design.AlertBean;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.design.CrisisBean;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.CtCoordinator;
@@ -50,6 +55,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtCoordinatorID;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtCrisisID;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtFamilyPhoneNumbers;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtAlertStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.types.stdlib.PtBoolean;
@@ -117,6 +123,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		inputEventsTable1.setContainerDataSource(actCoordinator.getMessagesDataSource());
 		inputEventsTable1.setWidth("100%");
 		inputEventsTable1.setResponsive(true);
+		inputEventsTable1.setColumns("inputEvent", "message");
 		
 		alertsContent.addComponents(alertsBar, alertButtons1, alertButtons2, alertsTable, inputEventsTable1);
 		
@@ -127,7 +134,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		alertStatus.setNullSelectionAllowed(false);
 		alertStatus.addItems("Pending", "Valid", "Invalid");
 		alertStatus.setImmediate(true);
-		
+
 		alertStatus.select("Pending");
 		
 		Button validateAlertBtn = new Button("Validate");
@@ -328,13 +335,13 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		
 		////////////////////////////////////////
 
-		HashMap<Button, TextField> phoneList = new HashMap<Button, TextField>();
+		HashMap<TextField, NativeSelect> phoneList = new HashMap<TextField, NativeSelect>();
 
 		Window familyNumbersCrisisSubWindow = new Window();
 		familyNumbersCrisisSubWindow.setClosable(false);
 		familyNumbersCrisisSubWindow.setResizable(false);
 		familyNumbersCrisisSubWindow.setResponsive(true);
-		familyNumbersCrisisSubWindow.setHeight("250px");
+		familyNumbersCrisisSubWindow.setHeight("300px");
 		VerticalLayout familyNumbersLayout = new VerticalLayout();
 		familyNumbersLayout.setMargin(true);
 		familyNumbersLayout.setSpacing(true);
@@ -362,16 +369,20 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		familyNumbersCrisisBtn.addClickListener(event -> {
 			CrisisBean selectedCrisisBean = (CrisisBean) crisesTable.getSelectedRow();
 			Integer thisCrisisID = new Integer(selectedCrisisBean.getID());
-			ArrayList<DtPhoneNumber> familyPhoneNumbers = new ArrayList<DtPhoneNumber>();
-			for (TextField field: phoneList.values())
+			DtFamilyPhoneNumbers familyPhoneNumbers = new DtFamilyPhoneNumbers();
+			Iterator<Entry<TextField, NativeSelect>> it = phoneList.entrySet().iterator();
+			while (it.hasNext())
 			{
-				if (field.getValue().length() > 0)
+				Entry<TextField, NativeSelect> field = (Entry<TextField, NativeSelect>)it.next();
+				String phone = field.getKey().getValue();
+				String company = (String) field.getValue().getValue();
+				if (phone.length() > 0)
 				{
 					DtPhoneNumber familyNumber = new DtPhoneNumber(
 													new PtString(
-															field.getValue()));
+															phone));
 					if (familyNumber.is().getValue() == true) {
-						familyPhoneNumbers.add(familyNumber);
+						familyPhoneNumbers.put(company, familyNumber);
 					}
 				}
 			}
@@ -426,7 +437,10 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 			crisisID2.setValue(thisCrisisID.toString());
 			crisisID2.setEnabled(false);
 			familyNumbersLayout.removeAllComponents();
+			ContentMode mode = ContentMode.PREFORMATTED;
+			familyNumbersLayout.addComponent(new Label("Crisis ID\n", mode));
 			familyNumbersLayout.addComponents(crisisID2);
+			familyNumbersLayout.addComponent(new Label("Phone number          Communication Company\n", mode));
 			phoneList.clear();
 			for (String phone: selectedCrisisBean.getFamilyNumbers())
 			{
@@ -474,22 +488,38 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 	public void enter(ViewChangeEvent event) {
 	}
 
-	private void fillFamilyNumbersLayout(String phone, VerticalLayout familyNumbersLayout, HashMap<Button, TextField> phoneList, Window familyNumbersCrisisSubWindow, boolean insertBeforeButtons) {
-		
+	private void fillFamilyNumbersLayout(String phone, VerticalLayout familyNumbersLayout, HashMap<TextField, NativeSelect> phoneList, Window familyNumbersCrisisSubWindow, boolean insertBeforeButtons) {
 		TextField familyNumber = new TextField();
+		familyNumber.setInputPrompt("Phone number");
 		Button deletePhone = new Button();
+		NativeSelect comCompanyName = new NativeSelect();
+		comCompanyName.addItems(IcrashSystem.comCompanyViewNames);
+		comCompanyName.setInvalidAllowed(false);
+		comCompanyName.setNullSelectionAllowed(false);
+		comCompanyName.setImmediate(true);
+		if (phone.length() > 0) {
+			comCompanyName.setValue("0" + DbComCompanies.getComCompanyID(sys.getActComCompany(IcrashSystem.cmpSystemCtHuman.get(phone)).getName()));
+			comCompanyName.setEnabled(false);
+			comCompanyName.setReadOnly(true);
+		}
+		else {
+			comCompanyName.setValue(IcrashSystem.comCompanyViewNames.get(0));
+		}
+		comCompanyName.setDescription("Communication Company");
 		deletePhone.setIcon(FontAwesome.TRASH_O);
 		HorizontalLayout numberLayout = new HorizontalLayout();
 		numberLayout.setSpacing(true);
-		numberLayout.addComponents(familyNumber, deletePhone);
+		numberLayout.addComponents(familyNumber, comCompanyName, deletePhone);
 		if (insertBeforeButtons) {
 			familyNumbersLayout.addComponent(numberLayout, familyNumbersLayout.getComponentCount() - 1);
 		}
 		else {
 			familyNumbersLayout.addComponent(numberLayout);
 		}
-		familyNumber.setValue(phone);
-		phoneList.put(deletePhone, familyNumber);
+		if (phone.length() > 0) {
+			familyNumber.setValue(phone);
+		}
+		phoneList.put(familyNumber, comCompanyName);
 		deletePhone.addClickListener(event1 -> {
 			phoneList.remove(deletePhone);
 			familyNumbersLayout.removeComponent(numberLayout);

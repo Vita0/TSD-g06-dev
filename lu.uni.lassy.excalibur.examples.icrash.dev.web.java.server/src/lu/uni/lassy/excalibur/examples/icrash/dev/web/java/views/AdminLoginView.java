@@ -96,7 +96,7 @@ public class AdminLoginView extends HorizontalLayout implements View, Button.Cli
 		Table adminMessagesTable = new Table();
 		adminMessagesTable.setContainerDataSource(actAdmin.getMessagesDataSource());
 		adminMessagesTable.setCaption("Administrator messages");
-	//	adminMessagesTable.setVisibleColumns("inputEvent", "message");
+		adminMessagesTable.setVisibleColumns("inputEvent", "message");
 		/*********************************************************************************************/
 		
 		FormLayout FL = new FormLayout(username, password, loginButton);

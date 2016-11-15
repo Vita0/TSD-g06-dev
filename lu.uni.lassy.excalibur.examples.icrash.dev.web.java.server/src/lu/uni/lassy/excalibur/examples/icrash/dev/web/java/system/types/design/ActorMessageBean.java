@@ -16,12 +16,20 @@ public class ActorMessageBean implements Serializable {
 	private static final long serialVersionUID = -942432626544007040L;
 	private String inputEvent;
 	private String message;
-	
-	public ActorMessageBean(String str, String msg) {
+	private String phoneNumber;
+
+	public ActorMessageBean(String str, String phoneNumber, String msg) {
 		setInputEvent(str);
+		setPhoneNumber(phoneNumber);
 		setMessage(msg);
 	}
-	
+
+	public ActorMessageBean(String str, String msg) {
+		setInputEvent(str);
+		setPhoneNumber("");
+		setMessage(msg);
+	}
+
 	public String getInputEvent() {
 		return inputEvent;
 	}
@@ -33,5 +41,11 @@ public class ActorMessageBean implements Serializable {
 	}
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
 	}
 }

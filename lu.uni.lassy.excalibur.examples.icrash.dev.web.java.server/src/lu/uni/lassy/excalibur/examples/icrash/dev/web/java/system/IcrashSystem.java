@@ -17,9 +17,11 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -51,6 +53,7 @@ import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtLogin;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPassword;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtPhoneNumber;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.DtFamilyPhoneNumbers;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtAlertStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisStatus;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.primary.EtCrisisType;
@@ -646,7 +649,7 @@ public class IcrashSystem implements Serializable {
 				DtComment acComment = new DtComment(new PtString(
 						"no report defined, yet"));
 				aCtCrisis.init(acId, acType, acStatus, aDtGPSLocation, aInstant,
-						new ArrayList<DtPhoneNumber>(), acComment);
+						new DtFamilyPhoneNumbers(), acComment);
 	
 				//DB: insert crisis in the database
 				DbCrises.insertCrisis(aCtCrisis);
@@ -979,13 +982,13 @@ public class IcrashSystem implements Serializable {
 
 				if (aDtCrisisSendSmsFamily.getValue() == true)
 				{
-					for (DtPhoneNumber familyNumber: theCrisis.familyNumbers)
+					for (DtPhoneNumber familyNumber: theCrisis.familyNumbers.listDtPhoneNumbers)
 					{
 						//PostF2
 						CtHuman aCtFamilyHuman = new CtHuman();
 						boolean existsHuman = false;
 				
-						//check if there already exists a human with such phine number
+						//check if there already exists a human with such phone number
 						for (CtHuman existingHuman : assCtHumanActComCompany.keySet()) {
 							String exPhoneNumber = existingHuman.id.value.getValue();
 				
@@ -1000,8 +1003,7 @@ public class IcrashSystem implements Serializable {
 						// and (2) to add it to the assCtHumanActComCompany relationship 
 				
 						if (!existsHuman) {
-							//TODO: add new kind
-							EtHumanKind aEtHumanKind = EtHumanKind.anonym;
+							EtHumanKind aEtHumanKind = EtHumanKind.familyMember;
 							aCtFamilyHuman.init(familyNumber, aEtHumanKind);
 							assCtHumanActComCompany.put(aCtFamilyHuman, currentConnectedComCompany);
 				
@@ -1030,7 +1032,7 @@ public class IcrashSystem implements Serializable {
 		return new PtBoolean(true);
 	}
 
-	public PtBoolean oeAddFamilyNumbersOnCrisis(DtCrisisID aDtCrisisID, ArrayList<DtPhoneNumber> aDtFamilyNumbers) {
+	public PtBoolean oeAddFamilyNumbersOnCrisis(DtCrisisID aDtCrisisID,  DtFamilyPhoneNumbers aDtFamilyPhoneNumbers) {
 		try {
 			// PreP 1
 			if (!isSystemStartedCheck()) {
@@ -1047,11 +1049,57 @@ public class IcrashSystem implements Serializable {
 				ActCoordinator theActCoordinator = (ActCoordinator) currentRequestingAuthenticatedActor;
 
 				// PostF 1
-				theCrisis.familyNumbers = aDtFamilyNumbers;
+				theCrisis.familyNumbers = aDtFamilyPhoneNumbers;
 				DbCrises.updateCrisis(theCrisis);
 				PtString aMessage = new PtString("The crisis family phone numbers have been updated!");
 				theActCoordinator.ieMessage(aMessage);
 
+				//PostF2
+				Iterator<Entry<String, DtPhoneNumber>> it = theCrisis.familyNumbers.assComCompanyViewNamesDtPhoneNumber.entrySet().iterator();
+				while (it.hasNext())
+				{
+					Entry<String, DtPhoneNumber> entry = (Entry<String, DtPhoneNumber>) it.next();
+					String comCompanyViewName = entry.getKey();
+					DtPhoneNumber familyNumber = entry.getValue();
+
+					
+					CtHuman aCtFamilyHuman = new CtHuman();
+					boolean existsHuman = false;
+	
+					//check if there already exists a human with such phone number
+					for (CtHuman existingHuman : assCtHumanActComCompany.keySet()) {
+						String exPhoneNumber = existingHuman.id.value.getValue();
+						if (exPhoneNumber.equals(familyNumber.value.getValue())) {
+							existsHuman = true;
+							break;
+						}
+					}
+
+					//if there no exists human, then we need (1) to initialise the just created instance
+					// and (2) to add it to the assCtHumanActComCompany relationship 
+					if (!existsHuman) {
+						EtHumanKind aEtHumanKind = EtHumanKind.familyMember;
+						aCtFamilyHuman.init(familyNumber, aEtHumanKind);
+						ActComCompany familyComCompany = cmpSystemActComCompany.get(DbComCompanies.getComCompanyName(comCompanyViewName));
+						if (familyComCompany != null) {
+							assCtHumanActComCompany.put(aCtFamilyHuman, familyComCompany);
+						}
+						else {
+							familyComCompany = currentConnectedComCompany;
+							assCtHumanActComCompany.put(aCtFamilyHuman, currentConnectedComCompany);
+						}
+
+						//update Messir composition
+						cmpSystemCtHuman.put(aCtFamilyHuman.id.value.getValue(), aCtFamilyHuman);
+
+						//DB: get currentConnectedComCompany's id
+						String idComCompany = DbComCompanies
+								.getComCompanyID(familyComCompany.getName());
+			
+						//DB: insert human in the database
+						DbHumans.insertHuman(aCtFamilyHuman, idComCompany);
+					}
+				}
 				return new PtBoolean(true);
 			}
 		}
@@ -1087,7 +1135,7 @@ public class IcrashSystem implements Serializable {
 						
 						//PostF1
 						ArrayList<String> familyNumbers = new ArrayList<String>();
-						for (DtPhoneNumber phone: crisis.familyNumbers) { 
+						for (DtPhoneNumber phone: crisis.familyNumbers.listDtPhoneNumbers) { 
 							familyNumbers.add(phone.toString());
 						} 
 
