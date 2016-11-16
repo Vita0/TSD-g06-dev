@@ -45,6 +45,7 @@ import com.vaadin.shared.ui.label.ContentMode;
 
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.IcrashEnvironment;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.actors.ActCoordinator;
+import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.environment.actors.ActComCompany;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.IcrashSystem;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.db.DbComCompanies;
 import lu.uni.lassy.excalibur.examples.icrash.dev.web.java.system.types.design.AlertBean;
@@ -498,7 +499,10 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		comCompanyName.setNullSelectionAllowed(false);
 		comCompanyName.setImmediate(true);
 		if (phone.length() > 0) {
-			comCompanyName.setValue("0" + DbComCompanies.getComCompanyID(sys.getActComCompany(IcrashSystem.cmpSystemCtHuman.get(phone)).getName()));
+			ActComCompany company = sys.getActComCompany(IcrashSystem.cmpSystemCtHuman.get(phone));
+			if (company != null) {
+				comCompanyName.setValue("0" + DbComCompanies.getComCompanyID(company.getName()));
+			}
 			comCompanyName.setEnabled(false);
 			comCompanyName.setReadOnly(true);
 		}
@@ -521,7 +525,7 @@ public class CoordMobileAuthView extends TabBarView implements View, Serializabl
 		}
 		phoneList.put(familyNumber, comCompanyName);
 		deletePhone.addClickListener(event1 -> {
-			phoneList.remove(deletePhone);
+			phoneList.remove(familyNumber);
 			familyNumbersLayout.removeComponent(numberLayout);
 		});
 	}

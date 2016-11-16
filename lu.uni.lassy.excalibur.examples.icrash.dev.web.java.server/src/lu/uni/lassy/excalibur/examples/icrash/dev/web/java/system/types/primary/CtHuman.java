@@ -86,7 +86,7 @@ public class CtHuman implements Serializable {
 	 * @return the success of the method
 	 * @throws RemoteException Thrown if the server is offline
 	 */
-	public PtBoolean isFamilyAcknowledged(String report) {
+	public PtBoolean isFamilyAcknowledged(DtComment report) {
 
 		try {
 			IcrashSystem sys = IcrashSystem.getInstance();
@@ -94,7 +94,7 @@ public class CtHuman implements Serializable {
 			ActComCompany theComCompany = sys.getActComCompany(this);
 			
 			if(theComCompany != null){
-				DtSMS sms = new DtSMS(new PtString("The crisis report changed! New Report: " + report));
+				DtSMS sms = new DtSMS(new PtString("The crisis report changed! New Report: " + report.value.getValue()));
 				return theComCompany.ieSmsSend(this.id, sms);
 			} else
 				throw new Exception("No com company assigned to the human " + this.id.value.getValue());

@@ -1018,7 +1018,8 @@ public class IcrashSystem implements Serializable {
 							DbHumans.insertHuman(aCtFamilyHuman, idComCompany);
 				
 						}
-						if (!aCtFamilyHuman.isFamilyAcknowledged(theCrisis.comment.value.getValue()).getValue())
+						//PostF3
+						if (!aCtFamilyHuman.isFamilyAcknowledged(theCrisis.comment).getValue())
 							log.error("Unable to message a communication company (family member) about the crisis report update");
 					}
 				}
