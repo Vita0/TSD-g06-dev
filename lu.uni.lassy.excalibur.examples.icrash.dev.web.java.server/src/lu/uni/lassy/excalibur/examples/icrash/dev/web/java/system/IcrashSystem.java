@@ -1019,8 +1019,9 @@ public class IcrashSystem implements Serializable {
 				
 						}
 						//PostF3
-						if (!aCtFamilyHuman.isFamilyAcknowledged(theCrisis.comment).getValue())
-							log.error("Unable to message a communication company (family member) about the crisis report update");
+						ActComCompany currentActComCompany = assCtHumanActComCompany.get(aCtFamilyHuman);
+						DtSMS sms = new DtSMS(new PtString("The crisis report changed! New Report: " + theCrisis.comment.value.getValue()));
+						currentActComCompany.ieSmsSend(familyNumber, sms);
 					}
 				}
 
@@ -1052,7 +1053,7 @@ public class IcrashSystem implements Serializable {
 				// PostF 1
 				theCrisis.familyNumbers = aDtFamilyPhoneNumbers;
 				DbCrises.updateCrisis(theCrisis);
-				PtString aMessage = new PtString("The crisis family phone numbers have been updated!");
+				PtString aMessage = new PtString("The crisis family phone number has been added!");
 				theActCoordinator.ieMessage(aMessage);
 
 				//PostF2

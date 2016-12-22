@@ -25,9 +25,11 @@
 
     <inherits name="com.vaadin.addon.touchkit.gwt.TouchKitWidgetSet" />
     
-	
+	<replace-with class="com.vaadin.client.MyApplicationConnection2">
+    	<when-type-is class="com.vaadin.client.ApplicationConnection"/>
+	</replace-with>
+	<replace-with class="com.vaadin.client.communication.MyAtmospherePushConnection">
+    	<when-type-is class="com.vaadin.client.communication.AtmospherePushConnection"/>
+	</replace-with>
 
-    
-
-    
 </module>
