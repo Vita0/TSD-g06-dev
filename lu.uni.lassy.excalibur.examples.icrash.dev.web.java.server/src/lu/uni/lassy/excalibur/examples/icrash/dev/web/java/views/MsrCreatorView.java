@@ -45,7 +45,7 @@ public class MsrCreatorView extends MsrCreatorDesign implements View, Serializab
 			IcrashSystem sys = IcrashSystem.getInstance();
 			IcrashEnvironment env = IcrashEnvironment.getInstance();
 			
-			//DbInitialize.initializeDatabase();
+			DbInitialize.initializeDatabase();
 				
 			// Messir initialization routines 
 			ActMsrCreator theCreator = env.getActMsrCreator();
